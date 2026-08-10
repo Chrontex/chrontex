@@ -1,0 +1,2 @@
+# chrontex
+The NSBM-EventHub event management webapp
