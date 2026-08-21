@@ -1,0 +1,8 @@
+# Local credentials — copy src/config.example.php to src/config.php and fill in
+src/config.php
+
+# Editor/OS noise
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
