@@ -1,6 +1,9 @@
 # Local credentials — copy src/config.example.php to src/config.php and fill in
 src/config.php
 
+# Deploy-time secrets passed to Cloud Run via --env-vars-file
+env.yaml
+
 # Editor/OS noise
 .vscode/
 .idea/

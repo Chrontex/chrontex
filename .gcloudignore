@@ -1,0 +1,15 @@
+# Controls what gets uploaded to Cloud Build on `gcloud run deploy --source .`
+# NOTE: config.php is intentionally NOT ignored — the app requires it and it's
+# env-driven (no secrets baked in). env.yaml IS ignored: it holds real secrets
+# and is only read locally by gcloud via --env-vars-file.
+.git
+.gitignore
+.gcloudignore
+README.md
+LICENSE
+tests/
+env.yaml
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
