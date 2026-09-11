@@ -3,10 +3,15 @@ session_start();
 require_once __DIR__ . '/../../config.php';
 require_once __DIR__ . '/../../includes/db.php';
 require_once __DIR__ . '/../../includes/mailservice.php';
+require_once __DIR__ . '/../../includes/turnstile.php';
 
 $errors = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!turnstile_verify($_POST['cf-turnstile-response'] ?? null, 'register', $_SERVER['REMOTE_ADDR'] ?? null)) {
+        $errors[] = 'Captcha verification failed. Please try again.';
+    }
+
     $full_name = trim($_POST['full_name']);
     $email     = trim($_POST['email']);
     $password  = $_POST['password'];
@@ -98,6 +103,7 @@ require_once __DIR__ . '/../../includes/header.php';
                     <label class="form-label">Confirm Password</label>
                     <input type="password" name="confirm_password" class="form-control" required>
                 </div>
+                <?php turnstile_field('register'); ?>
                 <button type="submit" class="btn btn-primary w-100">Register</button>
             </form>
 

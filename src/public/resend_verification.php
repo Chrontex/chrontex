@@ -2,11 +2,16 @@
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/mailservice.php';
+require_once __DIR__ . '/../includes/turnstile.php';
 
 $message = '';
 $message_type = '';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' &&
+    !turnstile_verify($_POST['cf-turnstile-response'] ?? null, 'resend', $_SERVER['REMOTE_ADDR'] ?? null)) {
+    $message = 'Captcha verification failed. Please try again.';
+    $message_type = 'danger';
+} elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email']);
 
     $stmt = $conn->prepare('SELECT user_id, full_name, status FROM users WHERE email = ?');
@@ -60,6 +65,7 @@ require_once __DIR__ . '/../includes/header.php';
                     <label class="form-label">Email</label>
                     <input type="email" name="email" class="form-control" required>
                 </div>
+                <?php turnstile_field('resend'); ?>
                 <button type="submit" class="btn btn-primary w-100">Send New Link</button>
             </form>
 

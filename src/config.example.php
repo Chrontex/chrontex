@@ -17,3 +17,7 @@ define('SMTP_PASS', getenv('SMTP_PASS') ?: 'your-google-app-password');
 define('SMTP_PORT', getenv('SMTP_PORT') ?: 587);
 define('SMTP_FROM_EMAIL', getenv('SMTP_FROM_EMAIL') ?: 'no-reply@chrontex.app');
 define('SMTP_FROM_NAME', getenv('SMTP_FROM_NAME') ?: 'Chrontex Service');
+
+define('TURNSTILE_SITEKEY', getenv('TURNSTILE_SITEKEY') ?: '0x4AAAAAAEwCNIkRcX5wsRz6');
+define('TURNSTILE_SECRET', getenv('TURNSTILE_SECRET') ?: '');
+define('TURNSTILE_HOSTNAMES', getenv('TURNSTILE_HOSTNAMES') ?: '');
