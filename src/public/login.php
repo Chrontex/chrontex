@@ -2,40 +2,45 @@
 session_start();
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/turnstile.php';
 
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email    = trim($_POST['email']);
-    $password = $_POST['password'];
-
-    $stmt = $conn->prepare('SELECT user_id, full_name, password, role, status FROM users WHERE email = ?');
-    $stmt->bind_param('s', $email);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    if ($result->num_rows === 1) {
-        $user = $result->fetch_assoc();
-
-        if ($user['status'] === 'blocked') {
-            $error = 'Your account has been blocked. Contact support.';
-        } elseif ($user['status'] === 'unverified') {
-            $error = 'Please verify your email before logging in. '
-                   . "<a href='" . BASE_URL . "/resend_verification.php'>Resend verification email</a>";
-        } elseif (password_verify($password, $user['password'])) {
-            $_SESSION['user_id']   = $user['user_id'];
-            $_SESSION['full_name'] = $user['full_name'];
-            $_SESSION['role']      = $user['role'];
-            $destination = $user['role'] === 'admin' ? '/admin/index.php' : '/student/index.php';
-            header('Location: ' . BASE_URL . $destination);
-            exit;
-        } else {
-            $error = 'Incorrect password.';
-        }
+    if (!turnstile_verify($_POST['cf-turnstile-response'] ?? null, 'login', $_SERVER['REMOTE_ADDR'] ?? null)) {
+        $error = 'Captcha verification failed. Please try again.';
     } else {
-        $error = 'No account found with that email.';
+        $email    = trim($_POST['email']);
+        $password = $_POST['password'];
+
+        $stmt = $conn->prepare('SELECT user_id, full_name, password, role, status FROM users WHERE email = ?');
+        $stmt->bind_param('s', $email);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows === 1) {
+            $user = $result->fetch_assoc();
+
+            if ($user['status'] === 'blocked') {
+                $error = 'Your account has been blocked. Contact support.';
+            } elseif ($user['status'] === 'unverified') {
+                $error = 'Please verify your email before logging in. '
+                       . "<a href='" . BASE_URL . "/resend_verification.php'>Resend verification email</a>";
+            } elseif (password_verify($password, $user['password'])) {
+                $_SESSION['user_id']   = $user['user_id'];
+                $_SESSION['full_name'] = $user['full_name'];
+                $_SESSION['role']      = $user['role'];
+                $destination = $user['role'] === 'admin' ? '/admin/index.php' : '/student/index.php';
+                header('Location: ' . BASE_URL . $destination);
+                exit;
+            } else {
+                $error = 'Incorrect password.';
+            }
+        } else {
+            $error = 'No account found with that email.';
+        }
+        $stmt->close();
     }
-    $stmt->close();
 }
 
 require_once __DIR__ . '/../includes/header.php';
@@ -65,6 +70,7 @@ require_once __DIR__ . '/../includes/header.php';
                     <label class="form-label">Password</label>
                     <input type="password" name="password" class="form-control" required>
                 </div>
+                <?php turnstile_field('login'); ?>
                 <button type="submit" class="btn btn-primary w-100">Login</button>
             </form>
 
